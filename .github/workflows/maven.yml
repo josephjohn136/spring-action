@@ -33,10 +33,11 @@ jobs:
           name: create war file
           path: target/spring-action.war
 
-      - name: Copy package to S3 on AWS
-        uses: qualitia-cdev/copy-to-s3@0.0.2
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws_access_key_id: ${{ secrets.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY }}
-          aws_s3_bucket_name: ${{ secrets.S3_BUCKET_NAME }}
-          source_path: "target/spring-action.war"
+          aws-access-key-id: ${ secret.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }
+          aws-secret-access-key: ${ secret.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY }
+      - name: Copy files to the test website with the AWS CLI
+        run: |
+          aws s3 cp target/spring-action.war s3://${ secret.S3_BUCKET_NAME }
