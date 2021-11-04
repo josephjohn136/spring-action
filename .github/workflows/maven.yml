@@ -5,22 +5,38 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 8
-      uses: actions/setup-java@v2
-      with:
-        java-version: '8'
-        distribution: 'adopt'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: "8"
+          distribution: "adopt"
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+        #run: mvn -B package --file pom.xml
+
+      - name: create maven artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: create war file
+          path: target/spring-action.war
+
+      - name: Copy package to S3 on AWS
+        uses: qualitia-cdev/copy-to-s3@0.0.2
+        with:
+          aws_access_key_id: ${{ secrets.S3_BUILD_ARTIFACTS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.S3_BUILD_ARTIFACTS_SECRET_ACCESS_KEY }}
+          aws_s3_bucket_name: ${{ secrets.S3_BUCKET_NAME }}
+          source_path: "target/spring-action.war"
